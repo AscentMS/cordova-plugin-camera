@@ -226,6 +226,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
             Log.d("CameraLauncher", "result no result:" + PluginResult.Status.NO_RESULT);
+            Log.d("CameraLauncher", "PluginResult - Status: " + r.getStatus().name() +
+                        ", Message: " + r.getMessage() +
+                        ", Keep Callback: " + r.getKeepCallback());
+
             r.setKeepCallback(true);
             callbackContext.sendPluginResult(r);
 
