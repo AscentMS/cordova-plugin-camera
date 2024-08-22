@@ -63,6 +63,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import android.util.Log;
+
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
  * and returns the captured image.  When the camera view is closed, the screen displayed before
@@ -146,6 +148,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
+        Log.d("CameraLauncher", "Action is: " + action);
 
         this.applicationId = cordova.getContext().getPackageName();
         this.applicationId = preferences.getString("applicationId", this.applicationId);
@@ -159,6 +162,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             this.encodingType = JPEG;
             this.mediaType = PICTURE;
             this.mQuality = 50;
+
+            Log.d("CameraLauncher", "Arguments received: " + args.toString());
 
             //Take the values from the arguments if they're not already defined (this is tricky)
             this.destType = args.getInt(1);
@@ -188,16 +193,22 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.encodingType = JPEG;
             }
 
+            Log.d("CameraLauncher", "srcType is: " + this.srcType);
             try {
                 if (this.srcType == CAMERA) {
                     this.callTakePicture(destType, encodingType);
                 }
                 else if ((this.srcType == PHOTOLIBRARY) || (this.srcType == SAVEDPHOTOALBUM)) {
+                    Log.d("CameraLauncher", "mediaType is:" + mediaType);
                     // FIXME: Stop always requesting the permission
                     String[] permissions = getPermissions(true, mediaType);
+                    Log.d("CameraLauncher", "got permissions" + permissions);
                     if(!hasPermissions(permissions)) {
+                        Log.d("CameraLauncher", "NO permissions");
                         PermissionHelper.requestPermissions(this, SAVE_TO_ALBUM_SEC, permissions);
                     } else {
+                        Log.d("CameraLauncher", "YES permissions");
+                        Log.d("CameraLauncher", "destType is:" + destType);
                         this.getImage(this.srcType, destType);
                     }
                 }
