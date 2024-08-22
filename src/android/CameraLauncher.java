@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.util.Log;
+import java.util.Arrays;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
