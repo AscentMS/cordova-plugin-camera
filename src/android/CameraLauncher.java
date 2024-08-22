@@ -80,6 +80,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private static final int PICTURE = 0;               // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
     private static final int VIDEO = 1;                 // allow selection of video only, ONLY RETURNS URL
     private static final int ALLMEDIA = 2;              // allow selection from all media types
+    private static final int SPECIFICMEDIA = 3;          // allow selection of specific media of any type
 
     private static final int JPEG = 0;                  // Take a picture of type JPEG
     private static final int PNG = 1;                   // Take a picture of type PNG
@@ -265,7 +266,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 case VIDEO:
                     permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
                     break;
-                case USER_SELECTED:
+                case SPECIFICMEDIA:
                     permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
                     break;
                 default:
