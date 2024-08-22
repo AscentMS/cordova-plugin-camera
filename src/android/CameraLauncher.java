@@ -75,14 +75,15 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private static final int DATA_URL = 0;              // Return base64 encoded string
     private static final int FILE_URI = 1;              // Return file uri (content://media/external/images/media/2 for Android)
 
+    // srcTypes
     private static final int PHOTOLIBRARY = 0;          // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
     private static final int CAMERA = 1;                // Take picture from camera
     private static final int SAVEDPHOTOALBUM = 2;       // Choose image from picture library (same as PHOTOLIBRARY for Android)
 
+    // mediaTypes
     private static final int PICTURE = 0;               // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
     private static final int VIDEO = 1;                 // allow selection of video only, ONLY RETURNS URL
     private static final int ALLMEDIA = 2;              // allow selection from all media types
-    private static final int SPECIFICMEDIA = 3;          // allow selection of specific media of any type
 
     private static final int JPEG = 0;                  // Take a picture of type JPEG
     private static final int PNG = 1;                   // Take a picture of type PNG
@@ -202,7 +203,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     Log.d("CameraLauncher", "mediaType is:" + mediaType);
                     // FIXME: Stop always requesting the permission
                     String[] permissions = getPermissions(true, mediaType);
-                    Log.d("CameraLauncher", "got permissions" + permissions);
+                    Log.d("CameraLauncher", "got permissions: " + Arrays.toString(permissions));
                     if(!hasPermissions(permissions)) {
                         Log.d("CameraLauncher", "NO permissions");
                         PermissionHelper.requestPermissions(this, SAVE_TO_ALBUM_SEC, permissions);
@@ -270,15 +271,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // Android API 34 and higher (Android 14)
+            // How do we check for / add ...
+            //permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
             switch (mediaType) {
                 case PICTURE:
                     permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
                     break;
                 case VIDEO:
                     permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-                    break;
-                case SPECIFICMEDIA:
-                    permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
                     break;
                 default:
                     permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
