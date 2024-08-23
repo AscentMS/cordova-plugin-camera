@@ -1375,6 +1375,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         ByteArrayOutputStream jpeg_data = new ByteArrayOutputStream();
         CompressFormat compressFormat = getCompressFormatForEncodingType(encodingType);
 
+        Log.d("CameraLauncher", "processPicture");
+
         try {
             if (bitmap.compress(compressFormat, mQuality, jpeg_data)) {
                 byte[] code = jpeg_data.toByteArray();
@@ -1397,6 +1399,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param err
      */
     public void failPicture(String err) {
+        Log.d("CameraLauncher", "failPicture: " + err);
         this.callbackContext.error(err);
     }
 
