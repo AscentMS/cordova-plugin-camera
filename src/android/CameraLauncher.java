@@ -466,9 +466,11 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     public void getImage(int srcType, int returnType) {
         Intent intent = new Intent();
         String title = GET_PICTURE;
+        Log.d("CameraLauncher", "getImage called");
         croppedUri = null;
         croppedFilePath = null;
         if (this.mediaType == PICTURE) {
+            Log.d("CameraLauncher", "Getting picture");
             intent.setType("image/*");
             if (this.allowEdit) {
                 intent.setAction(Intent.ACTION_PICK);
@@ -800,6 +802,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     private void processResultFromGallery(int destType, Intent intent) {
         Uri uri = intent.getData();
+        Log.d("CameraLauncher", "processResultFromGallery");
         if (uri == null) {
             if (croppedUri != null) {
                 uri = croppedUri;
@@ -811,12 +814,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         String fileLocation = FileHelper.getRealPath(uri, this.cordova);
         LOG.d(LOG_TAG, "File location is: " + fileLocation);
+        LOG.d("CameraLauncher", "File location is: " + fileLocation);
 
         String uriString = uri.toString();
         String finalLocation = fileLocation != null ? fileLocation : uriString;
         String mimeTypeOfGalleryFile = FileHelper.getMimeType(uriString, this.cordova);
 
         if (finalLocation == null) {
+            LOG.d("CameraLauncher", "Failed in final location:" + finalLocation);
             this.failPicture("Error retrieving result.");
         } else {
             // If you ask for video or the selected file cannot be processed
