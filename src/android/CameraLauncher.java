@@ -344,6 +344,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param encodingType           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
      */
     public void callTakePicture(int returnType, int encodingType) {
+        Log.d("CameraLauncher", "callTakePicture called");
         String[] storagePermissions = getPermissions(true, mediaType);
         boolean saveAlbumPermission;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -376,6 +377,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             }
         }
 
+        Log.d("CameraLauncher", "saveAlbumPermission: "+ saveAlbumPermission);
+        Log.d("CameraLauncher", "takePicturePermission: "+ takePicturePermission);
         if (takePicturePermission && saveAlbumPermission) {
             takePicture(returnType, encodingType);
         } else if (saveAlbumPermission) {
