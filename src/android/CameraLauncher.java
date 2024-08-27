@@ -311,8 +311,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             //permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
             switch (mediaType) {
                 case PICTURE:
-                    // TEST THIS for only sleecting multiple images
-                    //permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
                     permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
                     break;
                 case VIDEO:
