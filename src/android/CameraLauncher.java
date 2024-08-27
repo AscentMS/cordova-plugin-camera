@@ -271,11 +271,61 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
+    private String[] getPermissions(boolean storageOnly, int mediaType) {
+        ArrayList<String> permissions = new ArrayList<>();
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android API 33 and higher
+            // switch (mediaType) {
+            //     case PICTURE:
+            //         permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+            //         break;
+            //     case VIDEO:
+            //         permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+            //         break;
+            //     default:
+            //         permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+            //         permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+            //         break;
+            // }
+        } else {
+            // Android API 32 or lower
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+
+        if (!storageOnly) {
+            // Add camera permission when not storage.
+            permissions.add(Manifest.permission.CAMERA);
+        }
+
+        return permissions.toArray(new String[0]);
+    }
+
     // private String[] getPermissions(boolean storageOnly, int mediaType) {
     //     ArrayList<String> permissions = new ArrayList<>();
 
-    //     if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    //         // Android API 33 and higher
+    //     if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+    //         // Android API 34 and higher (Android 14)
+    //         // How do we check for / add ...
+    //         //permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+    //         switch (mediaType) {
+    //             case PICTURE:
+    //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+    //                 permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+    //                 break;
+    //             case VIDEO:
+    //                 permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+    //                 permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+    //                 break;
+    //             default:
+    //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+    //                 permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+    //                 permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+    //                 break;
+    //         }
+    //     } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    //         // Android API 33 (Android 13)
     //         switch (mediaType) {
     //             case PICTURE:
     //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
@@ -301,56 +351,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     //     return permissions.toArray(new String[0]);
     // }
-
-    private String[] getPermissions(boolean storageOnly, int mediaType) {
-        ArrayList<String> permissions = new ArrayList<>();
-
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            // Android API 34 and higher (Android 14)
-            // How do we check for / add ...
-            //permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-            switch (mediaType) {
-                case PICTURE:
-                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-                    permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-                    break;
-                case VIDEO:
-                    permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-                    permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-                    break;
-                default:
-                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-                    permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-                    permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-                    break;
-            }
-        } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android API 33 (Android 13)
-            switch (mediaType) {
-                case PICTURE:
-                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-                    break;
-                case VIDEO:
-                    permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-                    break;
-                default:
-                    permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-                    permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-                    break;
-            }
-        } else {
-            // Android API 32 or lower
-            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-
-        if (!storageOnly) {
-            // Add camera permission when not storage.
-            permissions.add(Manifest.permission.CAMERA);
-        }
-
-        return permissions.toArray(new String[0]);
-    }
 
     private String getTempDirectoryPath() {
         File cache = cordova.getActivity().getCacheDir();
