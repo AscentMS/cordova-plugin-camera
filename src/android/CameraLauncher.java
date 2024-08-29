@@ -150,7 +150,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
-        Log.d("CameraLauncher", "Action is: " + action);
 
         this.applicationId = cordova.getContext().getPackageName();
         this.applicationId = preferences.getString("applicationId", this.applicationId);
@@ -165,7 +164,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             this.mediaType = PICTURE;
             this.mQuality = 50;
 
-            Log.d("CameraLauncher", "Arguments received: " + args.toString());
 
             //Take the values from the arguments if they're not already defined (this is tricky)
             this.destType = args.getInt(1);
@@ -195,52 +193,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.encodingType = JPEG;
             }
 
-            Log.d("CameraLauncher", "srcType is: " + this.srcType);
             try {
                 if (this.srcType == CAMERA) {
                     this.callTakePicture(destType, encodingType);
                 }
                 else if ((this.srcType == PHOTOLIBRARY) || (this.srcType == SAVEDPHOTOALBUM)) {
-                    // This needs to change a lot
-                    // The getPermissions can no longer make assumptions about the permissions
-                    // to be checked by hasPermissions as 'mediaType' is not enough to determine
-                    // the difference between the request needing 'READ_MEDIA_IMAGES' or
-                    // 'READ_MEDIA_VISUAL_USER_SELECTED'. I.e we can only cal getImage when we
-                    // are sure we can access that image, which might involve knowing which images
-                    // have been granted specific access
-                    // The above needs changing / consideration for 'READ_MEDIA_VIDEO'
-                    //
-                    // 1. Check if we have granted permissions ('READ_MEDIA_IMAGES' or 'READ_MEDIA_VISUAL_USER_SELECTED')
-                    //    If this is 'READ_MEDIA_IMAGES' then just access then call 'getImage' as this is blanket access
-                    //    If this is 'READ_MEDIA_VISUAL_USER_SELECTED' then the user should be presented with an option
-                    //    to select from the images that have had access granted. I'm unlcear if we know at this point
-                    //    if they are trying to access a specific image - if so then check this is in the granted images
-                    // 2. If we have no granted permissions then we should ask the user to grant permissions. This will
-                    //    now need to launch and handle the response from the permissions dialog box. This is either:
-                    //    - 'Select photos and videos'
-                    //    - 'Allow all'
-                    //    - 'Don't allow'
-                    //    Based on selection call 'PermissionHelper.requestPermissions()' with the right permissions
-                    //    In terms of 'READ_MEDIA_VISUAL_USER_SELECTED' I'm unsure if just successfully requesting this
-                    //    forces the UI to show the image selection screen with just those images which have been previously
-                    //    selected.
-                    //
-                    // The result is 'onRequestPermissionResult' gets called after a permission request. If this is granted
-                    // (i.e the app has the permission) then here is where to make sure the image can be accessed / present
-                    // the user with images the can access. So if this was an 'Allow all' request then show everything / default
-                    // allow (if this is in the context of a single image). If this was in the context of 'specific images' then
-                    // show images that have been allowed / allow selection of that image if it was in the specifically granted
-                    // images.
-                    Log.d("CameraLauncher", "mediaType is:" + mediaType);
                     // FIXME: Stop always requesting the permission
                     String[] permissions = getPermissions(true, mediaType);
-                    Log.d("CameraLauncher", "got permissions: " + Arrays.toString(permissions));
                     if(!hasPermissions(permissions)) {
-                        Log.d("CameraLauncher", "NO permissions");
                         PermissionHelper.requestPermissions(this, SAVE_TO_ALBUM_SEC, permissions);
                     } else {
-                        Log.d("CameraLauncher", "YES permissions");
-                        Log.d("CameraLauncher", "destType is:" + destType);
                         this.getImage(this.srcType, destType);
                     }
                 }
@@ -249,16 +211,11 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             {
                 callbackContext.error("Illegal Argument Exception");
                 PluginResult r = new PluginResult(PluginResult.Status.ERROR);
-                Log.d("CameraLauncher", "result error:" + PluginResult.Status.ERROR);
                 callbackContext.sendPluginResult(r);
                 return true;
             }
 
             PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
-            Log.d("CameraLauncher", "PluginResult - Status: " + r.getStatus() +
-            ", Message: " + r.getMessage() +
-            ", Keep Callback: " + r.getKeepCallback());
-
             r.setKeepCallback(true);
             callbackContext.sendPluginResult(r);
 
@@ -274,6 +231,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private String[] getPermissions(boolean storageOnly, int mediaType) {
         ArrayList<String> permissions = new ArrayList<>();
 
+        // Removed as per this:
+        // https://github.com/apache/cordova-plugin-camera/issues/866
         // if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // Android API 33 and higher
             // switch (mediaType) {
@@ -302,56 +261,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         return permissions.toArray(new String[0]);
     }
-
-    // private String[] getPermissions(boolean storageOnly, int mediaType) {
-    //     ArrayList<String> permissions = new ArrayList<>();
-
-    //     if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-    //         // Android API 34 and higher (Android 14)
-    //         // How do we check for / add ...
-    //         //permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-    //         switch (mediaType) {
-    //             case PICTURE:
-    //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-    //                 break;
-    //             case VIDEO:
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-    //                 break;
-    //             default:
-    //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-    //                 break;
-    //         }
-    //     } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    //         // Android API 33 (Android 13)
-    //         switch (mediaType) {
-    //             case PICTURE:
-    //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-    //                 break;
-    //             case VIDEO:
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-    //                 break;
-    //             default:
-    //                 permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-    //                 permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-    //                 break;
-    //         }
-    //     } else {
-    //         // Android API 32 or lower
-    //         permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-    //         permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-    //     }
-
-    //     if (!storageOnly) {
-    //         // Add camera permission when not storage.
-    //         permissions.add(Manifest.permission.CAMERA);
-    //     }
-
-    //     return permissions.toArray(new String[0]);
-    // }
 
     private String getTempDirectoryPath() {
         File cache = cordova.getActivity().getCacheDir();
@@ -500,11 +409,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     public void getImage(int srcType, int returnType) {
         Intent intent = new Intent();
         String title = GET_PICTURE;
-        Log.d("CameraLauncher", "getImage called");
         croppedUri = null;
         croppedFilePath = null;
         if (this.mediaType == PICTURE) {
-            Log.d("CameraLauncher", "Getting picture");
             intent.setType("image/*");
             if (this.allowEdit) {
                 intent.setAction(Intent.ACTION_PICK);
@@ -1462,21 +1369,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) {
 
-        Log.d("CameraLauncher", "onRequestPermissionResult");
-        Log.d("CameraLauncher", "requestCode: " + requestCode);
-        Log.d("CameraLauncher", "permissions: " + Arrays.toString(permissions));
-        Log.d("CameraLauncher", "grantResults: " + Arrays.toString(grantResults));
-        // It seems like we determine the permissions we require for the action taken at the point of
-        // running 'execute'. This equates to clicking on 'Choose from Gallery' in our app.
-        // At this point the Android UI takes over and the user can select 'Select photos and videos' or 'Allow all'
-        // 'Select photos and videos' indicates they require specific access to the photos/videos and only 'READ_MEDIA_VISUAL_USER_SELECTED'
-        // would be granted
-        // 'Allow all' indicates full access to the photos/videos and only 'READ_MEDIA_IMAGES' would be granted
-        // This plugin doesn't look to interact with the native UI at this point, meaning the permission request
-        // is too early in the process to know what is correct.
         for (int r : grantResults) {
             if (r == PackageManager.PERMISSION_DENIED) {
-                Log.d("CameraLauncher", "denied: "+ r);
                 this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
                 return;
             }
