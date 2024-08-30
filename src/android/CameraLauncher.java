@@ -317,11 +317,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             }
         }
 
+
         Log.d("CameraLauncher", "saveAlbumPermission: "+ saveAlbumPermission);
         Log.d("CameraLauncher", "takePicturePermission: "+ takePicturePermission);
         if (takePicturePermission && saveAlbumPermission) {
             takePicture(returnType, encodingType);
-        } else if (saveAlbumPermission) {
+        } else if (storagePermission) {
             PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.CAMERA);
         } else if (takePicturePermission) {
             PermissionHelper.requestPermissions(this, TAKE_PIC_SEC, storagePermissions);
