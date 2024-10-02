@@ -74,28 +74,51 @@
     return newImage;
 }
 
-- (UIImage*)imageCorrectedForCaptureOrientation:(UIImageOrientation)imageOrientation
-{
+- (UIImage*)imageCorrectedForCaptureOrientation:(UIImageOrientation)imageOrientation {
     float rotation_radians = 0;
     bool perpendicular = false;
+    bool flipHorizontal = false;
     
     switch (imageOrientation) {
-        case UIImageOrientationUp :
+        case UIImageOrientationUp:
             rotation_radians = 0.0;
             break;
             
         case UIImageOrientationDown:
-            rotation_radians = M_PI; // don't be scared of radians, if you're reading this, you're good at math
+            rotation_radians = M_PI; // 180 degrees
             break;
             
         case UIImageOrientationRight:
-            rotation_radians = M_PI_2;
+            rotation_radians = M_PI_2; // 90 degrees clockwise
             perpendicular = true;
             break;
             
         case UIImageOrientationLeft:
-            rotation_radians = -M_PI_2;
+            rotation_radians = -M_PI_2; // 90 degrees counterclockwise
             perpendicular = true;
+            break;
+        
+        // Handling mirrored orientations
+        case UIImageOrientationUpMirrored:
+            rotation_radians = 0.0; // No rotation, but flip horizontally
+            flipHorizontal = true;
+            break;
+            
+        case UIImageOrientationDownMirrored:
+            rotation_radians = M_PI; // 180 degrees, then flip horizontally
+            flipHorizontal = true;
+            break;
+            
+        case UIImageOrientationRightMirrored:
+            rotation_radians = M_PI_2; // 90 degrees clockwise, flip horizontally
+            perpendicular = true;
+            flipHorizontal = true;
+            break;
+            
+        case UIImageOrientationLeftMirrored:
+            rotation_radians = -M_PI_2; // 90 degrees counterclockwise, flip horizontally
+            perpendicular = true;
+            flipHorizontal = true;
             break;
             
         default:
@@ -109,20 +132,71 @@
     CGContextTranslateCTM(context, self.size.width / 2, self.size.height / 2);
     CGContextRotateCTM(context, rotation_radians);
     
-    CGContextScaleCTM(context, 1.0, -1.0);
+    // Flip the image horizontally if needed
+    if (flipHorizontal) {
+        CGContextScaleCTM(context, -1.0, 1.0);
+    } else {
+        CGContextScaleCTM(context, 1.0, -1.0);
+    }
+    
     float width = perpendicular ? self.size.height : self.size.width;
     float height = perpendicular ? self.size.width : self.size.height;
     CGContextDrawImage(context, CGRectMake(-width / 2, -height / 2, width, height), [self CGImage]);
-    
-    // Move the origin back since the rotation might've change it (if its 90 degrees)
-    if (perpendicular) {
-        CGContextTranslateCTM(context, -self.size.height / 2, -self.size.width / 2);
-    }
     
     UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return newImage;
 }
+
+// - (UIImage*)imageCorrectedForCaptureOrientation:(UIImageOrientation)imageOrientation
+// {
+//     float rotation_radians = 0;
+//     bool perpendicular = false;
+    
+//     switch (imageOrientation) {
+//         case UIImageOrientationUp :
+//             rotation_radians = 0.0;
+//             break;
+            
+//         case UIImageOrientationDown:
+//             rotation_radians = M_PI; // don't be scared of radians, if you're reading this, you're good at math
+//             break;
+            
+//         case UIImageOrientationRight:
+//             rotation_radians = M_PI_2;
+//             perpendicular = true;
+//             break;
+            
+//         case UIImageOrientationLeft:
+//             rotation_radians = -M_PI_2;
+//             perpendicular = true;
+//             break;
+            
+//         default:
+//             break;
+//     }
+    
+//     UIGraphicsBeginImageContext(CGSizeMake(self.size.width, self.size.height));
+//     CGContextRef context = UIGraphicsGetCurrentContext();
+    
+//     // Rotate around the center point
+//     CGContextTranslateCTM(context, self.size.width / 2, self.size.height / 2);
+//     CGContextRotateCTM(context, rotation_radians);
+    
+//     CGContextScaleCTM(context, 1.0, -1.0);
+//     float width = perpendicular ? self.size.height : self.size.width;
+//     float height = perpendicular ? self.size.width : self.size.height;
+//     CGContextDrawImage(context, CGRectMake(-width / 2, -height / 2, width, height), [self CGImage]);
+    
+//     // Move the origin back since the rotation might've change it (if its 90 degrees)
+//     if (perpendicular) {
+//         CGContextTranslateCTM(context, -self.size.height / 2, -self.size.width / 2);
+//     }
+    
+//     UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+//     UIGraphicsEndImageContext();
+//     return newImage;
+// }
 
 - (UIImage*)imageCorrectedForCaptureOrientation
 {
