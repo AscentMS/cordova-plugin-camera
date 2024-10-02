@@ -81,47 +81,56 @@
     
     switch (imageOrientation) {
         case UIImageOrientationUp:
+            NSLog(@"Orientation: UIImageOrientationUp (0)");
             rotation_radians = 0.0;
             break;
             
         case UIImageOrientationDown:
+            NSLog(@"Orientation: UIImageOrientationDown (1)");
             rotation_radians = M_PI; // 180 degrees
             break;
             
         case UIImageOrientationRight:
+            NSLog(@"Orientation: UIImageOrientationRight (3)");
             rotation_radians = M_PI_2; // 90 degrees clockwise
             perpendicular = true;
             break;
             
         case UIImageOrientationLeft:
+            NSLog(@"Orientation: UIImageOrientationLeft (2)");
             rotation_radians = -M_PI_2; // 90 degrees counterclockwise
             perpendicular = true;
             break;
         
         // Handling mirrored orientations
         case UIImageOrientationUpMirrored:
+            NSLog(@"Orientation: UIImageOrientationUpMirrored (4)");
             rotation_radians = 0.0; // No rotation, but flip horizontally
             flipHorizontal = true;
             break;
             
         case UIImageOrientationDownMirrored:
+            NSLog(@"Orientation: UIImageOrientationDownMirrored (5)");
             rotation_radians = M_PI; // 180 degrees, then flip horizontally
             flipHorizontal = true;
             break;
             
         case UIImageOrientationRightMirrored:
+            NSLog(@"Orientation: UIImageOrientationRightMirrored (7)");
             rotation_radians = M_PI_2; // 90 degrees clockwise, flip horizontally
             perpendicular = true;
             flipHorizontal = true;
             break;
             
         case UIImageOrientationLeftMirrored:
+            NSLog(@"Orientation: UIImageOrientationLeftMirrored (6)");
             rotation_radians = -M_PI_2; // 90 degrees counterclockwise, flip horizontally
             perpendicular = true;
             flipHorizontal = true;
             break;
             
         default:
+            NSLog(@"Orientation: Unknown");
             break;
     }
     
