@@ -105,13 +105,13 @@
         // Handling mirrored orientations
         case UIImageOrientationUpMirrored:
             NSLog(@"Orientation: UIImageOrientationUpMirrored (2)");
-            rotation_radians = 0.0; // No rotation, but flip horizontally
+            rotation_radians = M_PI; // 180 degrees, then flip horizontally
             flipHorizontal = true;
             break;
             
         case UIImageOrientationDownMirrored:
             NSLog(@"Orientation: UIImageOrientationDownMirrored (4)");
-            rotation_radians = M_PI; // 180 degrees, then flip horizontally
+            rotation_radians = 0.0; // No rotation, but flip horizontally
             flipHorizontal = true;
             break;
             
