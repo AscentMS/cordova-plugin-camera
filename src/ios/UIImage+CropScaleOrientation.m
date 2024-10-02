@@ -81,36 +81,36 @@
     
     switch (imageOrientation) {
         case UIImageOrientationUp:
-            NSLog(@"Orientation: UIImageOrientationUp (0)");
+            NSLog(@"Orientation: UIImageOrientationUp (1)");
             rotation_radians = 0.0;
             break;
             
         case UIImageOrientationDown:
-            NSLog(@"Orientation: UIImageOrientationDown (1)");
+            NSLog(@"Orientation: UIImageOrientationDown (3)");
             rotation_radians = M_PI; // 180 degrees
             break;
             
         case UIImageOrientationRight:
-            NSLog(@"Orientation: UIImageOrientationRight (3)");
+            NSLog(@"Orientation: UIImageOrientationRight (8)");
             rotation_radians = M_PI_2; // 90 degrees clockwise
             perpendicular = true;
             break;
             
         case UIImageOrientationLeft:
-            NSLog(@"Orientation: UIImageOrientationLeft (2)");
+            NSLog(@"Orientation: UIImageOrientationLeft (6)");
             rotation_radians = -M_PI_2; // 90 degrees counterclockwise
             perpendicular = true;
             break;
         
         // Handling mirrored orientations
         case UIImageOrientationUpMirrored:
-            NSLog(@"Orientation: UIImageOrientationUpMirrored (4)");
+            NSLog(@"Orientation: UIImageOrientationUpMirrored (2)");
             rotation_radians = 0.0; // No rotation, but flip horizontally
             flipHorizontal = true;
             break;
             
         case UIImageOrientationDownMirrored:
-            NSLog(@"Orientation: UIImageOrientationDownMirrored (5)");
+            NSLog(@"Orientation: UIImageOrientationDownMirrored (4)");
             rotation_radians = M_PI; // 180 degrees, then flip horizontally
             flipHorizontal = true;
             break;
@@ -123,7 +123,7 @@
             break;
             
         case UIImageOrientationLeftMirrored:
-            NSLog(@"Orientation: UIImageOrientationLeftMirrored (6)");
+            NSLog(@"Orientation: UIImageOrientationLeftMirrored (5)");
             rotation_radians = -M_PI_2; // 90 degrees counterclockwise, flip horizontally
             perpendicular = true;
             flipHorizontal = true;
