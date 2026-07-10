@@ -140,6 +140,30 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private ExifHelper exifData;            // Exif data from source
     private String applicationId;
 
+    private void logCameraState(String step, Intent intent) {
+        String intentData = "null";
+        if (intent != null && intent.getData() != null) {
+            intentData = intent.getData().toString();
+        }
+
+        LOG.d(
+            LOG_TAG,
+            "[DBG] " + step +
+                " srcType=" + this.srcType +
+                " destType=" + this.destType +
+                " encodingType=" + this.encodingType +
+                " targetWidth=" + this.targetWidth +
+                " targetHeight=" + this.targetHeight +
+                " allowEdit=" + this.allowEdit +
+                " correctOrientation=" + this.correctOrientation +
+                " saveToPhotoAlbum=" + this.saveToPhotoAlbum +
+                " imageUri=" + String.valueOf(this.imageUri) +
+                " croppedUri=" + String.valueOf(this.croppedUri) +
+                " croppedFilePath=" + String.valueOf(this.croppedFilePath) +
+                " intentData=" + intentData
+        );
+    }
+
 
     /**
      * Executes the request and returns PluginResult.
@@ -489,6 +513,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     private void processResultFromCamera(int destType, Intent intent) throws IOException {
+        logCameraState("processResultFromCamera:start", intent);
         int rotate = 0;
 
         // Create an ExifHelper to save the exif data that is lost during compression
@@ -505,11 +530,24 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             mimeType = FileHelper.getMimeType(imageUri.toString(), cordova);
         }
 
+        LOG.d(
+            LOG_TAG,
+            "[DBG] processResultFromCamera:input source=" +
+                (this.allowEdit && this.croppedUri != null ? "croppedFilePath" : "imageUri") +
+                " mimeType=" + mimeType +
+                " inputNull=" + (input == null)
+        );
+
         if (input == null) {
             throw new IOException("Unable to open result source.");
         }
 
         byte[] sourceData = readData(input);
+        LOG.d(
+            LOG_TAG,
+            "[DBG] processResultFromCamera:sourceData bytes=" +
+                (sourceData == null ? -1 : sourceData.length)
+        );
 
         try {
             if (this.encodingType == JPEG) {
@@ -573,6 +611,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     // If we saved the uncompressed photo to the album, we can just
                     // return the URI we already created
                     if (this.saveToPhotoAlbum) {
+                        LOG.d(LOG_TAG, "[DBG] processResultFromCamera:return galleryUri=" + galleryUri);
                         this.callbackContext.success(galleryUri.toString());
                     } else {
                         Uri uri = Uri.fromFile(createCaptureFile(this.encodingType, System.currentTimeMillis() + ""));
@@ -585,6 +624,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                             writeUncompressedImage(imageUri, uri);
                         }
 
+                        LOG.d(LOG_TAG, "[DBG] processResultFromCamera:return fileUri=" + uri);
                         this.callbackContext.success(uri.toString());
                     }
                 } else {
@@ -617,6 +657,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     }
 
                     // Send Uri back to JavaScript for viewing image
+                    LOG.d(LOG_TAG, "[DBG] processResultFromCamera:return compressedFileUri=" + uri);
                     this.callbackContext.success(uri.toString());
                 }
             } else {
@@ -892,6 +933,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param intent      An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        logCameraState(
+            "onActivityResult requestCode=" + requestCode + " resultCode=" + resultCode,
+            intent
+        );
 
         // Get src and dest types from request code for a Camera Activity
         int srcType = (requestCode / 16) - 1;
@@ -906,9 +951,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 destType = requestCode - CROP_CAMERA;
                 try {
                     processResultFromCamera(destType, intent);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
-                    LOG.e(LOG_TAG, "Unable to write to file");
+                    LOG.e(LOG_TAG, "[DBG] Crop camera result handling failed", e);
+                    this.failPicture("Error handling cropped image: " + e.getLocalizedMessage());
                 }
 
             }// If cancelled
@@ -934,8 +980,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     } else {
                         this.processResultFromCamera(destType, intent);
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
+                    LOG.e(LOG_TAG, "[DBG] Camera result handling failed", e);
                     this.failPicture("Error capturing image: "+e.getLocalizedMessage());
                 }
             }
