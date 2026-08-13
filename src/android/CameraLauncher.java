@@ -140,6 +140,13 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private ExifHelper exifData;            // Exif data from source
     private String applicationId;
 
+    private BitmapFactory.Options createBitmapDecodeOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inDither = true;
+        return options;
+    }
+
     private void logDebug(String message) {
         LOG.d(LOG_TAG, message);
         Log.d(LOG_TAG, message);
@@ -1217,7 +1224,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         }
 
         // figure out the original width and height of the image
-        BitmapFactory.Options options = new BitmapFactory.Options();
+        BitmapFactory.Options options = createBitmapDecodeOptions();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(new ByteArrayInputStream(data), null, options);
 
@@ -1342,7 +1349,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 rotate = 0;
             }
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
+            BitmapFactory.Options options = createBitmapDecodeOptions();
             options.inJustDecodeBounds = true;
             bitmapInput = FileHelper.getInputStreamFromUriString(uriString, cordova);
             BitmapFactory.decodeStream(bitmapInput, null, options);
@@ -1472,14 +1479,17 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @return
      */
     public static int calculateSampleSize(int srcWidth, int srcHeight, int dstWidth, int dstHeight) {
+        int sampleSize;
         final float srcAspect = (float) srcWidth / (float) srcHeight;
         final float dstAspect = (float) dstWidth / (float) dstHeight;
 
         if (srcAspect > dstAspect) {
-            return srcWidth / dstWidth;
+            sampleSize = srcWidth / dstWidth;
         } else {
-            return srcHeight / dstHeight;
+            sampleSize = srcHeight / dstHeight;
         }
+
+        return Math.max(1, sampleSize);
     }
 
     /**
