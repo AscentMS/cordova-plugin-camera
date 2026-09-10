@@ -147,49 +147,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         return options;
     }
 
-    private void logDebug(String message) {
-        LOG.d(LOG_TAG, message);
-        Log.d(LOG_TAG, message);
-    }
-
-    private void logMemoryState(String prefix) {
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long totalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        long usedMemory = totalMemory - freeMemory;
-        logDebug(
-            prefix
-                + " memory[max="
-                + maxMemory
-                + ", total="
-                + totalMemory
-                + ", used="
-                + usedMemory
-                + ", free="
-                + freeMemory
-                + "]"
-        );
-    }
-
     private Uri getCurrentImageSourceUri() {
         if (this.allowEdit && this.croppedUri != null) {
             return this.croppedUri;
         }
 
         return this.imageUri;
-    }
-
-    private String getCurrentImageSourcePath() {
-        if (this.allowEdit && this.croppedFilePath != null) {
-            return this.croppedFilePath;
-        }
-
-        if (this.imageUri != null) {
-            return FileHelper.getRealPath(this.imageUri, this.cordova);
-        }
-
-        return null;
     }
 
     private InputStream openCurrentImageInputStream() throws IOException {
@@ -388,23 +351,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             applicationId + ".cordova.plugin.camera.provider",
             photo
         );
-        logDebug(
-            "takePicture returnType="
-                + returnType
-                + " encodingType="
-                + encodingType
-                + " imageUri="
-                + this.imageUri
-                + " targetWidth="
-                + this.targetWidth
-                + " targetHeight="
-                + this.targetHeight
-                + " quality="
-                + this.mQuality
-                + " correctOrientation="
-                + this.correctOrientation
-        );
-        logMemoryState("takePicture");
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         //We can write to this URI, this will hopefully allow us to write files to get to the next step
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -578,7 +524,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         InputStream input = null;
         Uri sourceUri = getCurrentImageSourceUri();
-        String sourcePath = getCurrentImageSourcePath();
         String mimeType;
         if (this.allowEdit && this.croppedUri != null) {
             mimeType = FileHelper.getMimeTypeForExtension(this.croppedFilePath);
@@ -590,22 +535,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         if (sourceUri == null) {
             throw new IOException("Unable to open result source.");
         }
-
-        logDebug(
-            "processResultFromCamera start destType="
-                + destType
-                + " sourceUri="
-                + sourceUri
-                + " sourcePath="
-                + sourcePath
-                + " mimeType="
-                + mimeType
-                + " allowEdit="
-                + this.allowEdit
-                + " saveToPhotoAlbum="
-                + this.saveToPhotoAlbum
-        );
-        logMemoryState("processResultFromCamera start");
 
         try {
             if (this.encodingType == JPEG) {
@@ -731,21 +660,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             if (input != null) {
                 input.close();
             }
-            logMemoryState("processResultFromCamera success");
         }
         catch (Exception e) {
             if (input != null) {
                 input.close();
             }
-            logDebug("processResultFromCamera exception=" + e);
-            logMemoryState("processResultFromCamera exception");
             throw e;
         } catch (OutOfMemoryError oom) {
             if (input != null) {
                 input.close();
             }
-            logDebug("processResultFromCamera OOM=" + oom);
-            logMemoryState("processResultFromCamera OOM");
             this.failPicture("Out of memory while processing image");
         }
     }
@@ -1009,19 +933,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param intent      An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        logDebug(
-            "onActivityResult requestCode="
-                + requestCode
-                + " resultCode="
-                + resultCode
-                + " hasIntent="
-                + (intent != null)
-                + " imageUri="
-                + this.imageUri
-                + " croppedUri="
-                + this.croppedUri
-        );
-        logMemoryState("onActivityResult");
 
         // Get src and dest types from request code for a Camera Activity
         int srcType = (requestCode / 16) - 1;
@@ -1062,7 +973,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         createCaptureFile(this.encodingType));
                         performCrop(tmpFile, destType, intent);
                     } catch (Exception e) {
-                        logDebug("onActivityResult allowEdit exception=" + e);
                         this.failPicture("Error capturing image: " + e.getLocalizedMessage());
                     }
                 } else {
@@ -1076,11 +986,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                                 e.printStackTrace();
                                 failPicture("Error capturing image: " + e.getLocalizedMessage());
                             } catch (OutOfMemoryError oom) {
-                                logDebug("onActivityResult camera OOM=" + oom);
-                                logMemoryState("onActivityResult camera OOM");
                                 failPicture("Out of memory while capturing image");
                             } catch (Exception e) {
-                                logDebug("onActivityResult camera exception=" + e);
                                 failPicture("Error capturing image: " + e.getLocalizedMessage());
                             }
                         }
@@ -1612,18 +1519,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * before we get the launched Activity's result.
      */
     public Bundle onSaveInstanceState() {
-        logDebug(
-            "onSaveInstanceState imageUri="
-                + this.imageUri
-                + " croppedUri="
-                + this.croppedUri
-                + " targetWidth="
-                + this.targetWidth
-                + " targetHeight="
-                + this.targetHeight
-                + " quality="
-                + this.mQuality
-        );
         Bundle state = new Bundle();
         state.putInt("destType", this.destType);
         state.putInt("srcType", this.srcType);
@@ -1648,7 +1543,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     }
 
     public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
-        logDebug("onRestoreStateForActivityResult start");
         this.destType = state.getInt("destType");
         this.srcType = state.getInt("srcType");
         this.mQuality = state.getInt("mQuality");
@@ -1669,21 +1563,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         }
 
         this.callbackContext = callbackContext;
-        logDebug(
-            "onRestoreStateForActivityResult restored imageUri="
-                + this.imageUri
-                + " croppedUri="
-                + this.croppedUri
-                + " targetWidth="
-                + this.targetWidth
-                + " targetHeight="
-                + this.targetHeight
-                + " quality="
-                + this.mQuality
-                + " correctOrientation="
-                + this.correctOrientation
-        );
-        logMemoryState("onRestoreStateForActivityResult");
     }
 
     /**
